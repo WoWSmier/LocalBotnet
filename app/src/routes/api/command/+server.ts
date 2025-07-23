@@ -22,6 +22,10 @@ const POST: RequestHandler = async (event) => {
 					emit(`bot-${index}`, data.toString());
 				});
 
+				process.stderr.on('data', (error) => {
+					emit(`bot-${index}`, error.toString());
+				});
+
 				process.on('close', () => {
 					endedBots++;
 
