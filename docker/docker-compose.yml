@@ -1,0 +1,15 @@
+services:
+  app:
+    container_name: local-botnet-app
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+      args:
+        - APP_BASE_PATH=${APP_BASE_PATH}
+    volumes:
+      - ../app:${APP_BASE_PATH}
+    ports:
+      - ${APP_PORT}:3000
+    tty: true
+    stdin_open: true
+    restart: unless-stopped

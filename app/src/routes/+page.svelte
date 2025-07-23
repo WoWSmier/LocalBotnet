@@ -1,0 +1,98 @@
+<script lang="ts">
+	import { source, type Options } from 'sveltekit-sse';
+
+	let bots = $state(2);
+	let command = $state('');
+
+	let chats = $state<
+		{
+			bot: number;
+			command: string;
+			messages: {
+				text: string;
+				date: Date;
+			}[];
+		}[]
+	>([]);
+
+	function send() {
+		if (bots < 1 || !command) {
+			return;
+		}
+
+		chats = [];
+
+		const event = source('/api/command', {
+			options: {
+				body: JSON.stringify({ bots, command })
+			} as Options
+		});
+
+		for (let index = 1; index <= bots; index++) {
+			event.select(`bot-${index}`).subscribe((data) => {
+				if (!data) return;
+
+				const chat = chats.find((chat) => chat.bot === index);
+
+				if (chat) {
+					chat.messages.push({ text: data, date: new Date() });
+
+					return;
+				}
+
+				chats.push({ bot: index, command, messages: [{ text: data, date: new Date() }] });
+			});
+		}
+	}
+
+	function formatDate(date: Date): string {
+		const timeFormatter = new Intl.DateTimeFormat('pl-PL', {
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit',
+			hour12: false
+		});
+
+		return timeFormatter.format(date);
+	}
+</script>
+
+<div class="grid h-screen w-screen grid-cols-2 bg-neutral-950">
+	<div class="flex flex-col gap-y-6 p-6">
+		<label class="flex flex-col gap-y-2">
+			<div class="text-green-500">Bots:</div>
+			<input
+				type="number"
+				bind:value={bots}
+				class="border-b border-green-500 text-green-500 focus:outline-none"
+			/>
+		</label>
+
+		<label>
+			<div class="text-green-500">Command:</div>
+			<textarea
+				bind:value={command}
+				class="h-max w-full resize-none border-b border-green-500 text-green-500 focus:outline-none"
+				rows="1"
+			></textarea>
+		</label>
+
+		<button onclick={send} class="cursor-pointer border border-green-500 py-2 text-green-500"
+			>Send</button
+		>
+	</div>
+
+	<div class="flex flex-col overflow-y-scroll border-l border-green-500">
+		{#each chats as chat (chat.bot)}
+			<div class="flex flex-col gap-y-2 border-b border-green-500 p-6">
+				<div class="text-green-500">Bot {chat.bot}&gt; {chat.command}</div>
+
+				<div class="flex flex-col">
+					{#each chat.messages as message (message)}
+						<div class="text-green-500">{formatDate(message.date)} {message.text}</div>
+					{/each}
+				</div>
+			</div>
+		{/each}
+	</div>
+</div>
