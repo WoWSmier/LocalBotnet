@@ -98,7 +98,7 @@
 
 				<div class="flex flex-col">
 					{#each chat.messages as message (message)}
-						<div class="text-green-500">{formatDate(message.date)} {message.text}</div>
+						<pre class="text-wrap text-green-500">{formatDate(message.date)} {message.text}</pre>
 					{/each}
 				</div>
 			</div>
