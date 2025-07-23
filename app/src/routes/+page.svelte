@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { EventType } from '$enums/event-type';
+	import type { DataEvent, ErrorEvent, Event } from '$types/event';
 	import { source, type Options } from 'sveltekit-sse';
 
 	let bots = $state(2);
@@ -8,6 +10,7 @@
 		{
 			bot: number;
 			command: string;
+			isEnded: boolean;
 			messages: {
 				text: string;
 				date: Date;
@@ -32,15 +35,45 @@
 			event.select(`bot-${index}`).subscribe((data) => {
 				if (!data) return;
 
+				const json: Event = JSON.parse(data);
+
 				const chat = chats.find((chat) => chat.bot === index);
 
-				if (chat) {
-					chat.messages.push({ text: data, date: new Date() });
+				function createMessage({ text, timestamp }: DataEvent | ErrorEvent) {
+					if (chat) {
+						chat.messages.push({ text: text, date: new Date(timestamp) });
 
-					return;
+						return;
+					}
+
+					chats.push({
+						bot: index,
+						command,
+						isEnded: false,
+						messages: [{ text: text, date: new Date(timestamp) }]
+					});
 				}
 
-				chats.push({ bot: index, command, messages: [{ text: data, date: new Date() }] });
+				function closeChat() {
+					if (chat) {
+						chat.isEnded = true;
+
+						return;
+					}
+
+					chats.push({
+						bot: index,
+						command,
+						isEnded: true,
+						messages: []
+					});
+				}
+
+				if (json.type === EventType.DATA || json.type === EventType.ERROR) {
+					createMessage(json);
+				} else if (json.type === EventType.CLOSE) {
+					closeChat();
+				}
 			});
 		}
 	}
@@ -101,6 +134,10 @@
 						<pre class="text-wrap text-green-500">{formatDate(message.date)} {message.text}</pre>
 					{/each}
 				</div>
+
+				{#if chat.isEnded}
+					<div class="text-green-500">Bot {chat.bot}&gt;</div>
+				{/if}
 			</div>
 		{/each}
 	</div>

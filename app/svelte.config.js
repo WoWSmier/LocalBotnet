@@ -6,7 +6,11 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter()
+		adapter: adapter(),
+		alias: {
+			'$enums/*': 'src/enums/*',
+			'$types/*': 'src/types/*'
+		}
 	}
 };
 
