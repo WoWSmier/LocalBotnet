@@ -55,6 +55,15 @@
 
 		return timeFormatter.format(date);
 	}
+
+	let sortedChats = $derived(
+		chats.toSorted((a, b) => {
+			if (a.bot > b.bot) return 1;
+			if (a.bot < b.bot) return -1;
+
+			return 0;
+		})
+	);
 </script>
 
 <div class="grid h-screen w-screen grid-cols-2 bg-neutral-950">
@@ -83,7 +92,7 @@
 	</div>
 
 	<div class="flex flex-col overflow-y-scroll border-l border-green-500">
-		{#each chats as chat (chat.bot)}
+		{#each sortedChats as chat (chat.bot)}
 			<div class="flex flex-col gap-y-2 border-b border-green-500 p-6">
 				<div class="text-green-500">Bot {chat.bot}&gt; {chat.command}</div>
 
