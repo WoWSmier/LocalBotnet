@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile.app
       args:
         - APP_BASE_PATH=${APP_BASE_PATH}
+    environment:
+      - ALLOWED_DOMAIN=${ALLOWED_DOMAIN}
     volumes:
       - ../app:${APP_BASE_PATH}
     ports:

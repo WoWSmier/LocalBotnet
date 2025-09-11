@@ -7,7 +7,8 @@ export default defineConfig({
 	preview: {
 		port: 3000,
 		host: true,
-		strictPort: true
+		strictPort: true,
+		allowedHosts: [process.env.ALLOWED_DOMAIN ?? '']
 	},
 	server: {
 		port: 3000,
