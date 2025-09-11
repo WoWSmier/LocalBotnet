@@ -6,3 +6,5 @@
 
 /environments/.env
 /environments/.env.local
+
+/nginx
